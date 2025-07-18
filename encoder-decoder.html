@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Hallucination: Encoder-Decoder vs. Decoder-Only</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* A light, neutral blue-gray */
+        }
+        .main-title {
+            color: #0d47a1; /* Deep Blue from 'Brilliant Blues' */
+        }
+        .section-title {
+            color: #1565c0; /* Slightly lighter blue */
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .stat-number {
+            color: #42a5f5; /* Bright Blue */
+            font-weight: 800;
+        }
+        .text-accent {
+             color: #1976d2; /* Medium Blue */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .flowchart-node {
+            border: 2px solid #90caf9; /* Light Blue Border */
+            background-color: #e3f2fd; /* Very Light Blue BG */
+            color: #0d47a1;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.05);
+        }
+        .flowchart-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #42a5f5;
+            padding: 0 0.5rem;
+        }
+    </style>
+</head>
+<body class="text-gray-700">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold main-title mb-2">Are Encoder-Decoder Models Less Prone to Hallucination?</h1>
+            <p class="text-lg md:text-xl text-gray-600 max-w-4xl mx-auto">A data-driven comparison of T5/Flan and GPT model architectures, grounded in recent AI research.</p>
+        </header>
+
+        <main class="space-y-12">
+            
+            <section id="introduction" class="text-center">
+                <div class="card p-6 md:p-8">
+                    <h2 class="text-2xl font-bold section-title mb-4">The Critical Challenge of AI Hallucination</h2>
+                    <p class="max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
+                        Hallucination, where Large Language Models (LLMs) generate factually incorrect or nonsensical information, is a primary barrier to their reliable deployment. Understanding which architectural designs are inherently more robust is crucial. This analysis explores the structural differences between encoder-decoder (e.g., T5) and decoder-only (e.g., GPT) models and how these differences impact their tendency to hallucinate, referencing key academic findings.
+                    </p>
+                </div>
+            </section>
+
+            <section id="architectures">
+                <h2 class="text-3xl font-bold section-title text-center mb-8">Architectural Blueprints: How They Differ</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                    
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-xl font-bold text-accent mb-3 text-center">Encoder-Decoder Models (e.g., T5, Flan-T5)</h3>
+                        <p class="mb-4 text-center flex-grow">These models process the input text with an 'encoder' to create a comprehensive, context-rich understanding. A 'decoder' then uses this fixed understanding as a strong guide to generate the output. This two-step process inherently anchors the output to the source material.</p>
+                        <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                            <div class="flowchart-node">Input Text</div>
+                            <div class="flowchart-arrow">&rarr;</div>
+                            <div class="flowchart-node font-bold">Encoder<br>(Builds Context)</div>
+                            <div class="flowchart-arrow">&rarr;</div>
+                            <div class="flowchart-node font-bold">Decoder<br>(Generates Output)</div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-xl font-bold text-accent mb-3 text-center">Decoder-Only Models (e.g., GPT Series)</h3>
+                        <p class="mb-4 text-center flex-grow">These models are autoregressive, meaning they predict the next word based on the prompt and all the words they have generated so far. Without a separate, holistic encoding of the input, the model's focus can drift during long generations, increasing the risk of deviating from source facts.</p>
+                         <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                            <div class="flowchart-node">[Input + Output]</div>
+                            <div class="flowchart-arrow">&#8635;</div>
+                            <div class="flowchart-node font-bold">Decoder<br>(Predicts Next Word)</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="comparative-analysis" class="md:col-span-2">
+                 <h2 class="text-3xl font-bold section-title text-center mb-8">Comparative Hallucination Tendency</h2>
+                <div class="card p-6 md:p-8">
+                   <p class="text-center mb-6 text-lg">Research suggests a structural advantage for encoder-decoder models in fact-grounded tasks. A study by Guerreiro et al. (2023) found them less prone to hallucination on knowledge-intensive tasks, attributing this to the encoder's grounding mechanism.</p>
+                    <div class="chart-container mx-auto">
+                        <canvas id="hallucinationTendencyChart"></canvas>
+                    </div>
+                    <p class="text-center mt-4 text-sm text-gray-500">This chart is a conceptual representation based on findings that encoder-decoder models show lower hallucination rates in source-grounded tasks compared to decoder-only models, especially before extensive instruction tuning.</p>
+                </div>
+            </section>
+            
+            <section id="key-factors">
+                <h2 class="text-3xl font-bold section-title text-center mb-8">Key Factors Influencing Hallucination</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="card p-6">
+                        <h3 class="font-bold text-lg text-accent mb-2">1. Source Grounding</h3>
+                        <p>The encoder's representation provides a strong, persistent "ground truth" for the decoder. This makes it harder for the model to invent facts, as it is constantly guided by the source content. Decoder-only models rely on attention mechanisms that can "forget" or de-prioritize initial context over longer outputs.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="font-bold text-lg text-accent mb-2">2. Training Objective</h3>
+                        <p>T5's "denoising" objective (filling in missing text) trains it to be highly faithful to surrounding context. GPT's "next-token prediction" is less constrained, optimizing for fluency and coherence, which can sometimes come at the cost of factual accuracy if the training data contains plausible falsehoods.</p>
+                    </div>
+                    <div class="card p-6 md:col-span-2 lg:col-span-1">
+                        <h3 class="font-bold text-lg text-accent mb-2">3. Instruction Tuning (The Great Equalizer)</h3>
+                        <p>Fine-tuning on diverse sets of instructions (as in Flan-T5 and InstructGPT) dramatically reduces hallucinations for <span class="font-bold">both</span> architectures. The "Scaling Instruction-Finetuned Language Models" paper (Chung et al., 2022) showed that this technique teaches models to be more helpful, honest, and harmless, directly improving factuality.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="research-evidence">
+                <h2 class="text-3xl font-bold section-title text-center mb-8">Evidence from Research</h2>
+                <div class="card p-6 md:p-8 md:col-span-2">
+                     <p class="text-center mb-6 text-lg">The TruthfulQA benchmark was designed to measure a model's tendency to generate common falsehoods. While newer, instruction-tuned models from both families perform better, the results highlight the profound impact of scaling and fine-tuning.</p>
+                    <div class="chart-container mx-auto">
+                        <canvas id="truthfulQAChart"></canvas>
+                    </div>
+                    <p class="text-center mt-4 text-sm text-gray-500">Illustrative data showing general performance trends on factuality benchmarks. Absolute scores vary, but the trend of instruction-tuned models outperforming base models is consistent across research.</p>
+                </div>
+            </section>
+            
+            <section id="conclusion">
+                <div class="card p-8 bg-blue-50">
+                    <h2 class="text-2xl font-bold section-title mb-4 text-center">Conclusion: Structure Matters, But Tuning is King</h2>
+                    <div class="text-base md:text-lg space-y-4 max-w-4xl mx-auto">
+                        <p><span class="font-bold text-accent">Encoder-decoder models like T5 and Flan have a structural advantage</span> that makes them inherently less prone to hallucination in tasks requiring faithfulness to a provided source. The encoder acts as a strong factual anchor, constraining the decoder's output.</p>
+                        <p>However, this is not the whole story. The single most important factor in mitigating hallucination is <span class="font-bold text-accent">large-scale instruction tuning</span>. As research from papers like "A Survey on Hallucination in Natural Language Generation" (Ji et al., 2023) confirms, fine-tuning improves factuality across all architectures.</p>
+                        <p class="font-semibold text-center mt-4">Ultimately, while T5's architecture provides a better "safety rail" against drifting from facts, a well-tuned decoder-only model like modern versions of GPT can also achieve high levels of factuality. The choice depends on the specific application's need for strict source grounding versus creative generation.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+
+    <script>
+        const wrapLabels = (labels, maxLength) => {
+            return labels.map(label => {
+                if (label.length <= maxLength) {
+                    return label;
+                }
+                const words = label.split(' ');
+                const lines = [];
+                let currentLine = '';
+                words.forEach(word => {
+                    if ((currentLine + ' ' + word).trim().length > maxLength) {
+                        lines.push(currentLine.trim());
+                        currentLine = word;
+                    } else {
+                        currentLine = (currentLine + ' ' + word).trim();
+                    }
+                });
+                lines.push(currentLine.trim());
+                return lines;
+            });
+        };
+        
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
+        
+        const defaultTooltipOptions = {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: tooltipTitleCallback
+                    }
+                }
+            }
+        };
+
+        const blues = {
+            deep: '#0d47a1',
+            medium: '#1976d2',
+            bright: '#42a5f5',
+            light: '#90caf9',
+            bg: '#e3f2fd'
+        };
+
+        const hallucinationTendencyCtx = document.getElementById('hallucinationTendencyChart').getContext('2d');
+        new Chart(hallucinationTendencyCtx, {
+            type: 'bar',
+            data: {
+                labels: wrapLabels(['Decoder-Only (Base GPT-style)', 'Encoder-Decoder (Base T5-style)'], 16),
+                datasets: [{
+                    label: 'Relative Hallucination Rate in Source-Grounded Tasks',
+                    data: [75, 45],
+                    backgroundColor: [blues.bright, blues.deep],
+                    borderColor: [blues.medium, blues.deep],
+                    borderWidth: 1,
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.7
+                }]
+            },
+            options: {
+                ...defaultTooltipOptions,
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Conceptual Hallucination Score (Lower is Better)'
+                        }
+                    }
+                },
+                plugins: {
+                    ...defaultTooltipOptions.plugins,
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Architectural Impact on Hallucination',
+                        font: { size: 16 }
+                    }
+                }
+            }
+        });
+
+        const truthfulQACtx = document.getElementById('truthfulQAChart').getContext('2d');
+        new Chart(truthfulQACtx, {
+            type: 'bar',
+            data: {
+                labels: wrapLabels(['Base Models (GPT-3, T5)', 'Instruction-Tuned Models (InstructGPT, Flan-T5)'], 16),
+                datasets: [{
+                    label: 'TruthfulQA Score (%)',
+                    data: [25, 70],
+                    backgroundColor: [blues.bright, blues.deep],
+                    borderColor: [blues.medium, blues.deep],
+                    borderWidth: 1,
+                    barPercentage: 0.5,
+                    categoryPercentage: 0.6
+                }]
+            },
+            options: {
+                ...defaultTooltipOptions,
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Factuality Score (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    ...defaultTooltipOptions.plugins,
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Impact of Instruction Tuning on Factuality',
+                        font: { size: 16 }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
